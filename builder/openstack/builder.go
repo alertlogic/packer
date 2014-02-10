@@ -35,6 +35,7 @@ func (b *Builder) Prepare(raws ...interface{}) ([]string, error) {
 		return nil, err
 	}
 
+
 	b.config.tpl, err = packer.NewConfigTemplate()
 	if err != nil {
 		return nil, err
@@ -60,10 +61,11 @@ func (b *Builder) Run(ui packer.Ui, hook packer.Hook, cache packer.Cache) (packe
 	if err != nil {
 		return nil, err
 	}
+        
+        log.Printf("Search endpoint")
 	api := &gophercloud.ApiCriteria{
-		Name:      "cloudServersOpenStack",
+		Type:      "compute",
 		Region:    b.config.AccessConfig.Region(),
-		VersionId: "2",
 		UrlChoice: gophercloud.PublicURL,
 	}
 	csp, err := gophercloud.ServersApi(auth, *api)
@@ -91,7 +93,7 @@ func (b *Builder) Run(ui packer.Ui, hook packer.Hook, cache packer.Cache) (packe
 			SourceImage: b.config.SourceImage,
 		},
 		&common.StepConnectSSH{
-			SSHAddress:     SSHAddress(csp, b.config.SSHPort),
+			SSHAddress:     SSHAddress(csp, b.config.SSHPort, b.config.IPPoolName),
 			SSHConfig:      SSHConfig(b.config.SSHUsername),
 			SSHWaitTimeout: b.config.SSHTimeout(),
 		},
